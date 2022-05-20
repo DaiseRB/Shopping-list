@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Shopping calculator</title>
+</head>
+<body>
+    
+    <div id="parent">
+        <h2>Ввод:</h2>
+        <div id="form">
+            <input id="name" placeholder="название">
+            <input id="price" placeholder="цена">
+            <input id="amount" placeholder="количество">
+            <input id="add" type="button" value="добавить">
+        </div>
+        
+        <h2>Калькулятор покупок:</h2>
+        <table id="table">
+            <tr>
+                <td class="heading">название</td>
+                <td class="heading">цена</td>
+                <td class="heading">кол-во</td>
+                <td class="heading">сумма</td>
+                <td class="heading">yдалить</td>
+            </tr>
+        </table>
+        <div id="result">
+            <p id="text">итого: <span id="total">0</span></p>
+        </div>
+    </div>
+    
+    <script>
+
+// Получаем ссылки на все нужные теги в переменные
+    let name   = document.querySelector('#name');
+    let price  = document.querySelector('#price');
+    let amount = document.querySelector('#amount');
+    let add    = document.querySelector('#add');
+    let table  = document.querySelector('#table');
+    let total  = document.querySelector('#total');
+
+    
+//Добавление новой покупки
+
+    //Функция, генерирующая ячейки таблицы. Параметрами принимает данные, которые пользователь ввел в инпут. 
+    function createCell (tr, value, name) {
+        let td;
+        td = document.createElement('td');
+        td.innerHTML = value;
+        td.classList.add(name);
+        tr.appendChild(td);
+        return td;
+    };
+
+
+    //По клику на кнопку "Добавить" добавляем новую строку продукта в таблицу.
+    add.addEventListener('click', function() {
+        let tr = document.createElement('tr');
+
+        allowEdit(createCell(tr, name.value, 'name'));
+        allowEdit(createCell(tr, price.value, 'price'));
+        allowEdit(createCell(tr, amount.value, 'amount'));
+	    allowEdit(createCell(tr, price.value * amount.value, 'cost'));
+        createCell(tr, 'удалить', 'remove').addEventListener('click', function() {
+            table.removeChild(tr);
+            recountTotal();
+        });//по клику удаляет созданный ряд таблицы с пересчетом общей стоимости покупок
+	
+        table.appendChild(tr);
+        recountTotal();
+    });
+
+ //Функция, пересчитывающая общую стоимость покупок. Пробегается циклом по всем покупкам и суммирует содержимое их ячейки 'cost'.   
+    function recountTotal() {
+        let costs = table.querySelectorAll('.cost');
+        let totalSum = 0;
+        for (let cost of costs) {
+            totalSum+= parseInt(cost.innerHTML);      
+        }
+        total.innerHTML=String(totalSum);    
+    }
+
+ //Функция, редактирующая данные о товаре. Параметром принимает ячейку и привязывает к ней возможность редактирования. 
+    function allowEdit(td) {
+        td.addEventListener('click', function() {
+            let text = td.innerHTML;
+            td.innerHTML = '';
+		
+            let input = document.createElement('input');
+            input.value = text;
+            input.focus();
+            td.appendChild(input);
+		
+            input.addEventListener('keydown', function(event) {
+                if (event.key == 'Enter') {
+                    td.innerHTML = this.value;
+				
+                if (td.classList.contains('price') || td.classList.contains('amount')) {
+                    let prices = document.querySelectorAll('.price');
+                    let amounts = document.querySelectorAll('.amount');
+                    let costs = document.querySelectorAll('.cost');
+                    for (let i=0; i<costs.length; i++) {
+                        costs[i].innerHTML=prices[i].innerHTML*amounts[i].innerHTML;
+                    }
+                    recountTotal();
+                } // выполняет перерасчет для ячейки с ценой и для ячейки с количеством    
+                }
+            });
+        });
+    }
+
+    </script>
+
+</body>
+</html>
